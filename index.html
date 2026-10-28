@@ -36,12 +36,14 @@ async function sendQuestion(){
  const mode=$('mode').value, language=$('language').value, level=$('level').value, detail=$('detail').value;
  const topicTeachingRule=`MANDATORY TEACHING STRUCTURE FOR THIS QUESTION: If the learner asks to learn or be taught a grammar topic/category such as noun, pronoun, adjective, verb, adverb, preposition, conjunction, article, tense, clause, or phrase, begin the lesson by explicitly stating how many main types/classes are being used in the classification you choose, and immediately list every type by name before explaining them. Do NOT say only that there are different kinds. Then explain each listed type one by one with clear definitions and English examples. Counts can differ across grammar books and classification systems, so briefly identify the framework and mention important alternative classifications when relevant; never invent a fixed count if there is no single accepted count. For a simple question that is not asking for a lesson, answer directly without forcing a full classification. Do not repeat these instructions to the learner.`;
  const effectiveQuestion=topicTeachingRule+'\n\nLEARNER QUESTION: '+originalQuestion;
- const history=state.messages.slice(-14).map(m=>({role:m.role,content:m.content}));
+ // Keep context small so the Worker model can answer promptly on mobile.
+ const history=state.messages.slice(-4).map(m=>({role:m.role,content:String(m.content||'').slice(-1400)}));
  addMessage('user',originalQuestion);
  let requestTimer=null;let requestController=null;
  try{
   requestController=new AbortController();
-  requestTimer=window.setTimeout(()=>requestController.abort(),60000);
+  requestTimer=window.setTimeout(()=>requestController.abort(),45000);
+  const waitingTimer=window.setTimeout(()=>{if(state.busy)setStatus('The Worker is reachable; waiting for the AI model to generate the lesson…');},8000);
   const response=await fetch(url+'/teach',{method:'POST',headers:{'Content-Type':'application/json'},signal:requestController.signal,body:JSON.stringify({question:effectiveQuestion,history,settings:{mode,language,level,detail}})});
   setStatus('The teacher responded. Preparing the lesson…');
   const raw=await response.text();let data;
@@ -52,10 +54,10 @@ async function sendQuestion(){
   addMessage('assistant',answer);setStatus('Lesson received. You can ask a follow-up question.','good');$('question').value='';
  }catch(error){
   let message=error&&error.message?error.message:'Unknown connection error';
-  if(error&&error.name==='AbortError')message='The Worker did not finish within 60 seconds. The request reached the waiting stage, but the AI service may be slow or stuck. Tap Test connection below. If that says Connected but lessons still time out, the Cloudflare Worker/AI model needs fixing.';
+  if(error&&error.name==='AbortError')message='The Worker did not finish within 45 seconds. The request reached the waiting stage, but the AI service may be slow or stuck. Tap Test connection below. If that says Connected but lessons still time out, the Cloudflare Worker/AI model needs fixing.';
   else if(/failed to fetch|networkerror/i.test(message))message='The browser could not receive a response. Check your internet connection, then tap Test connection below to check the Worker URL and CORS.';
   setStatus('Could not create the lesson: '+message,'error');
- }finally{if(requestTimer!==null)window.clearTimeout(requestTimer);state.busy=false;send.disabled=false;send.textContent=oldLabel;}
+ }finally{if(requestTimer!==null)window.clearTimeout(requestTimer);if(typeof waitingTimer!=='undefined')window.clearTimeout(waitingTimer);state.busy=false;send.disabled=false;send.textContent=oldLabel;}
 }
 function speechSegments(rawText){
  // Preserve line/section boundaries for natural pauses, while hiding markup.
