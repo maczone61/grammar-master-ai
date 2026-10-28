@@ -25,7 +25,23 @@ function renderMessage(msg){$('empty')?.remove();const card=document.createEleme
 function renderHistory(){$('chat').innerHTML='';if(!state.messages.length){const e=document.createElement('div');e.className='empty';e.id='empty';e.textContent='Your lesson will appear here. Ask a question or enter a topic to begin.';$('chat').appendChild(e);return}state.messages.forEach(renderMessage)}
 function buildModeInstruction(mode){return ({discuss:'Answer the exact question first, then explain clearly and continue naturally.',lecture:'Give a complete lecture with definition, classifications, rules, exceptions, examples, common errors, comparisons, and summary. End every lecture with at least 10 numbered exercise questions, followed by a separate answer key with explanations.',examples:'Explain the point and give varied natural examples, explaining each.',correct:'Correct the sentence if needed and explain each correction. If no sentence is given, teach the requested correction topic.',exercise:'Create at least 10 varied topic-specific exercise questions, not only gap-filling. Put all questions first, then a separate answer key with explanations.',compare:'Compare definition, function, form, differences, examples, and common confusion.'})[mode]||'Answer helpfully.'}
 function systemPrompt(){const language=$('language').value;const bilingualRule=language==='English'?'Write naturally in English.':'BILINGUAL TEACHING RULE — THIS IS MANDATORY: Explain and teach in '+language+', but keep every important English grammar term in English (for example, [[EN]]noun[[/EN]], [[EN]]verb[[/EN]], [[EN]]subject[[/EN]], [[EN]]object[[/EN]], [[EN]]tense[[/EN]]). Keep every example word, example phrase, example sentence, model dialogue, exercise question, answer option, and corrected English sentence in English only. Never translate English example sentences into '+language+'. Translate only the explanations, instructions about the examples, and commentary into '+language+'. Whenever you write an English grammar term, English example, or full English sentence, wrap that English span in the exact markers [[EN]] and [[/EN]], e.g. [[EN]]A noun names a person, place, thing, or idea.[[/EN]]. Do not put markers around the '+language+' explanation. These markers will be hidden from learners and used to make the English portions speak with an English voice and explanations speak with the selected language voice. Apply this rule to headings, tables, exercises, answer keys, and follow-up answers too. Do not write any example sentence in the explanation language; all example sentences must be English.';return `You are Grammar Master AI, a capable, patient, rigorous English grammar teacher. Answer open-ended questions, discuss grammar, give examples, analyse and correct sentences, generate lessons and exercises.\nTEACHING MODE: ${buildModeInstruction($('mode').value)}\nLEARNER LEVEL: ${$('level').value}.\nEXPLANATION LANGUAGE: ${language}.\n${bilingualRule}\nDETAIL: ${$('detail').value}.\nMANDATORY LECTURE PRACTICE RULE: Whenever you give a lecture, detailed lesson, or teach a grammar topic from scratch, finish with a section titled 'Exercise' (translate this heading into the selected explanation language if appropriate) containing AT LEAST 10 numbered questions based specifically on that lesson. Never provide fewer than 10. Include a useful mix of identification, classification, multiple choice, correction, and sentence-based questions when suitable; do not make all questions gap-fills. Put the complete answer key with brief explanations in a separate section AFTER all questions so learners can try first. If the learner explicitly asks for more than 10, follow the larger number. Keep every English grammar term, example, exercise sentence, question, and answer option in English; in non-English modes, wrap each English span in [[EN]]...[[/EN]] so the speech feature can switch voices. Keep teaching explanations and exercise instructions in the selected language. The 10-question minimum applies to every selected explanation language, not only English or Bengali. In short conversational answers that are not lectures, do not force a full exercise set unless the user asks for one.\nRules: Answer the exact question. If only a topic is named, teach it proactively. Give accurate natural examples. Distinguish modern grammar from traditional school terminology where relevant. Audit exercises and answer keys. A possessive determiner before a noun (my, your, its, their) is not a possessive pronoun in modern grammar; traditional school grammar may call it a possessive adjective. Possessive pronouns stand independently (mine, yours, hers, ours, theirs). Never omit correct answers from options. Avoid ambiguous blanks. Use prior conversation for follow-ups. Be respectful, clear, and accurate. Do not claim to browse the internet.`}
-function cleanTextForSpeech(text){return String(text||'').replace(/```[\s\S]*?```/g,' ').replace(/`([^`]*)`/g,'$1').replace(/(\*\*|__)(.*?)\1/g,'$2').replace(/(\*|_)(.*?)\1/g,'$2').replace(/^\s{0,3}#{1,6}\s+/gm,'').replace(/^\s*[-+*]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[*_~#`]/g,'').replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/\s+/g,' ').trim()}
+function cleanTextForSpeech(text){
+ return String(text||'')
+  .replace(/\[\[EN\]\]|\[\[\/EN\]\]/g,' ')
+  .replace(/```[\s\S]*?```/g,' ')
+  .replace(/`([^`]*)`/g,'$1')
+  .replace(/(\*\*|__)(.*?)\1/g,'$2')
+  .replace(/(\*|_)(.*?)\1/g,'$2')
+  .replace(/^\s{0,3}#{1,6}\s+/gm,' ')
+  .replace(/^\s*[-+*]\s+/gm,' ')
+  .replace(/^\s*\d+[.)]\s+/gm,' ')
+  .replace(/https?:\/\/\S+/gi,' ')
+  .replace(/&nbsp;/gi,' ').replace(/&amp;/gi,' and ').replace(/&lt;/gi,' ').replace(/&gt;/gi,' ')
+  // Remove punctuation and symbols from speech only, including Bengali danda (।),
+  // so the device never says punctuation names aloud.
+  .replace(/[\p{P}\p{S}]+/gu,' ')
+  .replace(/\s+/g,' ').trim();
+}
 async function sendQuestion(override){if(state.busy)return;const question=(override||$('question').value).trim();if(!question){setStatus('Enter a question or topic first.','error');return}const url=backendUrl();if(!url){setStatus('First paste your Cloudflare Worker URL in the backend section below.','error');$('workerUrl').focus();return}if(!/^https:\/\//i.test(url)){setStatus('The Worker URL must begin with https://','error');return}state.busy=true;$('send').disabled=true;$('send').textContent='Teaching…';setStatus('Thinking and preparing your explanation…');$('question').value='';state.messages.push({role:'user',content:question});renderMessage({role:'user',content:question});const pending=renderMessage({role:'assistant',content:'Preparing your answer…'});const history=state.messages.slice(0,-1).slice(-12).map(m=>({role:m.role,content:m.content}));try{const res=await fetch(url+'/teach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,history,settings:{mode:$('mode').value,language:$('language').value,level:$('level').value,detail:$('detail').value}})});let data;try{data=await res.json()}catch(e){throw new Error('The Worker returned an unreadable response. Check the deployed Worker code.')}if(!res.ok)throw new Error(data.error||('Request failed (HTTP '+res.status+').'));const answer=(data.answer||data.response||'').trim();if(!answer)throw new Error(data.error||'The AI returned an empty answer. Please try again.');state.messages.push({role:'assistant',content:answer});pending.remove();renderMessage({role:'assistant',content:answer});setStatus('Answer ready. Ask a follow-up whenever you like.','good')}catch(err){pending.remove();const msg='I could not complete that response. '+(err.message||'Please try again.');state.messages.push({role:'assistant',content:msg});renderMessage({role:'assistant',content:msg});setStatus('Connection or AI error: '+(err.message||'Unknown error'),'error')}finally{state.busy=false;$('send').disabled=false;$('send').textContent='Ask teacher ↗'}}
 function speakText(text){
  if(!('speechSynthesis' in window)){setStatus('Spoken answers are not supported in this browser.','error');return}
@@ -34,49 +50,40 @@ function speakText(text){
  window.speechSynthesis.cancel();
  const language=$('language').value;
  const languageMap={English:'en-US',Bengali:'bn-BD',Arabic:'ar-SA',Hindi:'hi-IN',Urdu:'ur-PK',Spanish:'es-ES',French:'fr-FR',Chinese:'zh-CN',Japanese:'ja-JP',Portuguese:'pt-PT',Indonesian:'id-ID',Turkish:'tr-TR'};
- const localLang=languageMap[language]||'en-US';
- const voices=window.speechSynthesis.getVoices();
- function chooseVoice(lang){
-  const prefix=lang.toLowerCase().split('-')[0];
-  return voices.find(v=>v.lang.toLowerCase()===lang.toLowerCase())||voices.find(v=>v.lang.toLowerCase().split('-')[0]===prefix)||null;
+ const selectedLang=languageMap[language]||'en-US';
+ const clean=cleanTextForSpeech(text);
+ if(!clean){setStatus('There is no readable text to speak.','error');return}
+ // One selected-language voice is used for the entire answer. [[EN]] markers no longer
+ // switch to an English voice; they are removed before speech.
+ function chooseVoice(){
+  const voices=window.speechSynthesis.getVoices()||[];
+  const exact=voices.filter(v=>v.lang&&v.lang.toLowerCase()===selectedLang.toLowerCase());
+  const sameLanguage=exact.length?exact:voices.filter(v=>v.lang&&v.lang.toLowerCase().split('-')[0]===selectedLang.toLowerCase().split('-')[0]);
+  // On Android, Google's installed voice is often the clearest available option.
+  return sameLanguage.find(v=>/google/i.test(v.name))||sameLanguage.find(v=>!v.name.toLowerCase().includes('compact'))||sameLanguage[0]||null;
  }
- function prepareSegments(raw){
-  const source=String(raw||'');
-  const segments=[];
-  const marker=/\[\[EN\]\]([\s\S]*?)\[\[\/EN\]\]/g;
-  let last=0,match;
-  while((match=marker.exec(source))!==null){
-   if(match.index>last)segments.push({text:source.slice(last,match.index),lang:localLang});
-   segments.push({text:match[1],lang:'en-US'});
-   last=marker.lastIndex;
-  }
-  if(last<source.length)segments.push({text:source.slice(last),lang:localLang});
-  if(!segments.length)segments.push({text:source,lang:localLang});
-  return segments.map(part=>({text:cleanTextForSpeech(part.text),lang:part.lang})).filter(part=>part.text);
+ const voice=chooseVoice();
+ // Keep utterances short enough for Android TTS, but use the same voice and language.
+ const chunks=[];
+ for(let i=0;i<clean.length;){
+  let end=Math.min(i+220,clean.length);
+  if(end<clean.length){const split=clean.lastIndexOf(' ',end);if(split>i+100)end=split;}
+  const chunk=clean.slice(i,end).trim();if(chunk)chunks.push(chunk);
+  i=end;while(clean[i]===' ')i++;
  }
- const segments=prepareSegments(text);
- if(!segments.length){setStatus('There is no readable text to speak.','error');return}
- // Queue language-specific utterances in order: the selected language for explanations,
- // and an English voice for English grammar terms, examples and sentences.
  let index=0;
  function speakNext(){
-  if(runId!==state.speechRunId||index>=segments.length)return;
-  const part=segments[index++];
-  const utter=new SpeechSynthesisUtterance(part.text);
-  utter.lang=part.lang;
-  utter.rate=.9;
-  const voice=chooseVoice(part.lang);
+  if(runId!==state.speechRunId||index>=chunks.length)return;
+  const utter=new SpeechSynthesisUtterance(chunks[index++]);
+  utter.lang=selectedLang;
   if(voice)utter.voice=voice;
+  utter.rate=0.86;
+  utter.pitch=1;
   utter.onend=()=>{if(runId===state.speechRunId)speakNext()};
-  utter.onerror=()=>{
-   if(runId!==state.speechRunId)return;
-   // Continue with the next segment if one device voice cannot speak a segment.
-   speakNext();
-  };
+  utter.onerror=()=>{if(runId===state.speechRunId)speakNext()};
   window.speechSynthesis.speak(utter);
  }
- // Some Android browsers populate their voice list asynchronously; language tags still
- // provide a fallback if no matching installed voice is returned.
+ // Android may load its voice list after page startup. The lang tag remains a fallback.
  speakNext();
 }
 function setupVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('voiceIn').disabled=true;$('voiceNote').textContent='Voice input is not available in this browser; type instead.';return}const rec=new SR();rec.interimResults=false;rec.continuous=false;rec.maxAlternatives=1;rec.onstart=()=>{$('voiceIn').textContent='Listening… tap to stop';setStatus('Listening. Speak your question.');};rec.onresult=e=>{$('question').value=($('question').value+' '+e.results[0][0].transcript).trim();$('question').focus();setStatus('Voice input added. Review it, then tap Ask teacher.','good')};rec.onerror=e=>setStatus('Voice input issue: '+e.error+'. You can type instead.','error');rec.onend=()=>{$('voiceIn').textContent='🎙 Speak';state.recognition=null};$('voiceIn').onclick=()=>{if(state.recognition){rec.stop();return}try{const map={English:'en-US',Bengali:'bn-BD',Arabic:'ar-SA',Hindi:'hi-IN',Urdu:'ur-PK',Spanish:'es-ES',French:'fr-FR',Chinese:'zh-CN',Japanese:'ja-JP',Portuguese:'pt-PT',Indonesian:'id-ID',Turkish:'tr-TR'};rec.lang=map[$('language').value]||'en-US';state.recognition=rec;rec.start()}catch(e){setStatus('Could not start voice input. Try again or type your question.','error')}}}
