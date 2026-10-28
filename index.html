@@ -28,26 +28,56 @@ function systemPrompt(){const language=$('language').value;const bilingualRule=l
 function cleanTextForSpeech(text){return String(text||'').replace(/```[\s\S]*?```/g,' ').replace(/`([^`]*)`/g,'$1').replace(/(\*\*|__)(.*?)\1/g,'$2').replace(/(\*|_)(.*?)\1/g,'$2').replace(/^\s{0,3}#{1,6}\s+/gm,'').replace(/^\s*[-+*]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[*_~#`]/g,'').replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/\s+/g,' ').trim()}
 async function sendQuestion(override){if(state.busy)return;const question=(override||$('question').value).trim();if(!question){setStatus('Enter a question or topic first.','error');return}const url=backendUrl();if(!url){setStatus('First paste your Cloudflare Worker URL in the backend section below.','error');$('workerUrl').focus();return}if(!/^https:\/\//i.test(url)){setStatus('The Worker URL must begin with https://','error');return}state.busy=true;$('send').disabled=true;$('send').textContent='Teaching…';setStatus('Thinking and preparing your explanation…');$('question').value='';state.messages.push({role:'user',content:question});renderMessage({role:'user',content:question});const pending=renderMessage({role:'assistant',content:'Preparing your answer…'});const history=state.messages.slice(0,-1).slice(-12).map(m=>({role:m.role,content:m.content}));try{const res=await fetch(url+'/teach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,history,settings:{mode:$('mode').value,language:$('language').value,level:$('level').value,detail:$('detail').value}})});let data;try{data=await res.json()}catch(e){throw new Error('The Worker returned an unreadable response. Check the deployed Worker code.')}if(!res.ok)throw new Error(data.error||('Request failed (HTTP '+res.status+').'));const answer=(data.answer||data.response||'').trim();if(!answer)throw new Error(data.error||'The AI returned an empty answer. Please try again.');state.messages.push({role:'assistant',content:answer});pending.remove();renderMessage({role:'assistant',content:answer});setStatus('Answer ready. Ask a follow-up whenever you like.','good')}catch(err){pending.remove();const msg='I could not complete that response. '+(err.message||'Please try again.');state.messages.push({role:'assistant',content:msg});renderMessage({role:'assistant',content:msg});setStatus('Connection or AI error: '+(err.message||'Unknown error'),'error')}finally{state.busy=false;$('send').disabled=false;$('send').textContent='Ask teacher ↗'}}
 function speakText(text){
- if(!('speechSynthesis'in window)){setStatus('Spoken answers are not supported in this browser.','error');return}
+ if(!('speechSynthesis' in window)){setStatus('Spoken answers are not supported in this browser.','error');return}
  state.speechRunId=(state.speechRunId||0)+1;
  const runId=state.speechRunId;
  window.speechSynthesis.cancel();
- const lang=$('language').value;
- const map={English:'en-US',Bengali:'bn-BD',Arabic:'ar-SA',Hindi:'hi-IN',Urdu:'ur-PK',Spanish:'es-ES',French:'fr-FR',Chinese:'zh-CN',Japanese:'ja-JP',Portuguese:'pt-PT',Indonesian:'id-ID',Turkish:'tr-TR'};
- const speechLang=map[lang]||'en-US';
- // Speak the complete bilingual answer in ONE utterance and ONE selected-language voice.
- // English markers are hidden before speech; there is no English voice queue or overlap.
- const spoken=cleanTextForSpeech(visibleText(String(text||'')));
- if(!spoken){setStatus('There is no readable text to speak.','error');return}
- const utter=new SpeechSynthesisUtterance(spoken);
- utter.lang=speechLang;
- utter.rate=.92;
+ const language=$('language').value;
+ const languageMap={English:'en-US',Bengali:'bn-BD',Arabic:'ar-SA',Hindi:'hi-IN',Urdu:'ur-PK',Spanish:'es-ES',French:'fr-FR',Chinese:'zh-CN',Japanese:'ja-JP',Portuguese:'pt-PT',Indonesian:'id-ID',Turkish:'tr-TR'};
+ const localLang=languageMap[language]||'en-US';
  const voices=window.speechSynthesis.getVoices();
- const prefix=speechLang.toLowerCase().split('-')[0];
- const voice=voices.find(v=>v.lang.toLowerCase()===speechLang.toLowerCase())||voices.find(v=>v.lang.toLowerCase().split('-')[0]===prefix);
- if(voice)utter.voice=voice;
- utter.onerror=()=>{if(runId===state.speechRunId)setStatus('Voice playback failed. Check that a '+lang+' voice is available on this device.','error')};
- window.speechSynthesis.speak(utter);
+ function chooseVoice(lang){
+  const prefix=lang.toLowerCase().split('-')[0];
+  return voices.find(v=>v.lang.toLowerCase()===lang.toLowerCase())||voices.find(v=>v.lang.toLowerCase().split('-')[0]===prefix)||null;
+ }
+ function prepareSegments(raw){
+  const source=String(raw||'');
+  const segments=[];
+  const marker=/\[\[EN\]\]([\s\S]*?)\[\[\/EN\]\]/g;
+  let last=0,match;
+  while((match=marker.exec(source))!==null){
+   if(match.index>last)segments.push({text:source.slice(last,match.index),lang:localLang});
+   segments.push({text:match[1],lang:'en-US'});
+   last=marker.lastIndex;
+  }
+  if(last<source.length)segments.push({text:source.slice(last),lang:localLang});
+  if(!segments.length)segments.push({text:source,lang:localLang});
+  return segments.map(part=>({text:cleanTextForSpeech(part.text),lang:part.lang})).filter(part=>part.text);
+ }
+ const segments=prepareSegments(text);
+ if(!segments.length){setStatus('There is no readable text to speak.','error');return}
+ // Queue language-specific utterances in order: the selected language for explanations,
+ // and an English voice for English grammar terms, examples and sentences.
+ let index=0;
+ function speakNext(){
+  if(runId!==state.speechRunId||index>=segments.length)return;
+  const part=segments[index++];
+  const utter=new SpeechSynthesisUtterance(part.text);
+  utter.lang=part.lang;
+  utter.rate=.9;
+  const voice=chooseVoice(part.lang);
+  if(voice)utter.voice=voice;
+  utter.onend=()=>{if(runId===state.speechRunId)speakNext()};
+  utter.onerror=()=>{
+   if(runId!==state.speechRunId)return;
+   // Continue with the next segment if one device voice cannot speak a segment.
+   speakNext();
+  };
+  window.speechSynthesis.speak(utter);
+ }
+ // Some Android browsers populate their voice list asynchronously; language tags still
+ // provide a fallback if no matching installed voice is returned.
+ speakNext();
 }
 function setupVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('voiceIn').disabled=true;$('voiceNote').textContent='Voice input is not available in this browser; type instead.';return}const rec=new SR();rec.interimResults=false;rec.continuous=false;rec.maxAlternatives=1;rec.onstart=()=>{$('voiceIn').textContent='Listening… tap to stop';setStatus('Listening. Speak your question.');};rec.onresult=e=>{$('question').value=($('question').value+' '+e.results[0][0].transcript).trim();$('question').focus();setStatus('Voice input added. Review it, then tap Ask teacher.','good')};rec.onerror=e=>setStatus('Voice input issue: '+e.error+'. You can type instead.','error');rec.onend=()=>{$('voiceIn').textContent='🎙 Speak';state.recognition=null};$('voiceIn').onclick=()=>{if(state.recognition){rec.stop();return}try{const map={English:'en-US',Bengali:'bn-BD',Arabic:'ar-SA',Hindi:'hi-IN',Urdu:'ur-PK',Spanish:'es-ES',French:'fr-FR',Chinese:'zh-CN',Japanese:'ja-JP',Portuguese:'pt-PT',Indonesian:'id-ID',Turkish:'tr-TR'};rec.lang=map[$('language').value]||'en-US';state.recognition=rec;rec.start()}catch(e){setStatus('Could not start voice input. Try again or type your question.','error')}}}
 $('send').addEventListener('click',()=>sendQuestion());$('question').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();sendQuestion()}});document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{$('question').value=b.dataset.prompt;$('question').focus();window.scrollTo({top:$('question').getBoundingClientRect().top+window.scrollY-80,behavior:'smooth'})}));$('clearInput').onclick=()=>{$('question').value=''};$('saveUrl').onclick=saveSettings;$('testUrl').onclick=async()=>{const url=backendUrl();if(!url){setBackendStatus('Paste your Worker URL first.','error');return}setBackendStatus('Testing connection…');try{const r=await fetch(url+'/health');const d=await r.json();if(!r.ok)throw new Error(d.error||'HTTP '+r.status);setBackendStatus('Connected. AI binding: '+(d.aiBinding?'available':'not detected')+'.','good')}catch(e){setBackendStatus('Could not connect: '+e.message+'. Check the URL and Worker deployment.','error')}};$('newChat').onclick=()=>{state.speechRunId=(state.speechRunId||0)+1;if('speechSynthesis'in window)window.speechSynthesis.cancel();if(state.busy){setStatus('Voice stopped. Wait for the current answer to finish before starting a new conversation.');return}state.messages=[];renderHistory();setStatus('New conversation started. Previous messages are cleared from this page.')};$('readAll').onclick=()=>{const last=[...state.messages].reverse().find(m=>m.role==='assistant');if(last)speakText(last.content);else setStatus('There is no answer to read yet.','error')};$('stopSpeech').onclick=()=>{state.speechRunId=(state.speechRunId||0)+1;if('speechSynthesis'in window)window.speechSynthesis.cancel();setStatus('Voice stopped.')};$('language').addEventListener('change',()=>{try{localStorage.setItem('gmai_language',$('language').value)}catch(e){}});loadSettings();setupVoice();
