@@ -60,33 +60,87 @@ async function sendQuestion(){
   setStatus('Could not create the lesson: '+message,'error');
  }finally{if(requestTimer!==null)window.clearTimeout(requestTimer);if(waitingTimer!==null)window.clearTimeout(waitingTimer);state.busy=false;send.disabled=false;send.textContent=oldLabel;}
 }
-function speechSegments(rawText){
- // Preserve line/section boundaries for natural pauses, while hiding markup.
- const source=String(rawText||'').replace(/\r/g,'').replace(/\[\[EN\]\]|\[\[\/EN\]\]/g,'')
-  .replace(/```[\s\S]*?```/g,' ')
-  .replace(/`([^`]*)`/g,'$1')
-  .replace(/&nbsp;/gi,' ').replace(/&amp;/gi,' and ').replace(/&lt;/gi,' ').replace(/&gt;/gi,' ')
-  .replace(/https?:\/\/\S+/gi,' ');
- const lines=source.split('\n'); const out=[];
- for(const raw of lines){
-  let line=raw.trim(); if(!line) { if(out.length) out[out.length-1].pause=Math.max(out[out.length-1].pause||0,260); continue; }
-  let kind='text';
-  const heading=line.match(/^\s{0,3}#{1,6}\s+(.+)$/); if(heading){line=heading[1];kind='heading';}
-  else if(/^[-*_]{3,}$/.test(line)) continue;
-  else {
-   const numbered=line.match(/^\s*(\d{1,3})[.)]\s+(.+)$/);
-   const bullet=line.match(/^\s*[-+*•]\s+(.+)$/);
-   if(numbered){line='Number '+numbered[1]+'. '+numbered[2];kind='item';}
-   else if(bullet){line=bullet[1];kind='item';}
+
+function speechSegments(rawText) {
+  // Prepare readable speech while preserving lesson content.
+  const source = String(rawText || '')
+    .replace(/\r/g, '')
+    .replace(/\[\[EN\]\]|\[\[\/EN\]\]/g, '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]*)`/g, '$1')
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]+)\]\(https?:\/\/[^)]*\)/g, '$1')
+    .replace(/https?:\/\/\S+/gi, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, ' and ')
+    .replace(/&lt;/gi, ' ')
+    .replace(/&gt;/gi, ' ')
+    .replace(/&quot;/gi, ' ')
+    .replace(/&#39;|&apos;/gi, ' ')
+    .replace(/<[^>]*>/g, ' ');
+
+  const lines = source.split('\n');
+  const out = [];
+
+  for (const raw of lines) {
+    let line = raw.trim();
+    if (!line) {
+      if (out.length) {
+        out[out.length - 1].pause =
+          Math.max(out[out.length - 1].pause || 0, 260);
+      }
+      continue;
+    }
+
+    let kind = 'text';
+
+    const heading = line.match(/^#{1,6}\s+(.+)$/);
+    if (heading) {
+      line = heading[1];
+      kind = 'heading';
+    } else if (/^[-*_]{3,}$/.test(line)) {
+      continue;
+    } else {
+      const numbered = line.match(/^(\d{1,3})[.)]\s+(.+)$/);
+      const bullet = line.match(/^[-+*•]\s+(.+)$/);
+
+      if (numbered) {
+        line = 'Number ' + numbered[1] + '. ' + numbered[2];
+        kind = 'item';
+      } else if (bullet) {
+        line = bullet[1];
+        kind = 'item';
+      }
+    }
+
+    // Remove Markdown emphasis without removing its words.
+    line = line
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/__(.*?)__/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/_(.*?)_/g, '$1')
+      .replace(/~~(.*?)~~/g, '$1');
+
+    // Remove remaining formatting symbols and invisible characters.
+    line = line
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/[\p{P}\p{S}]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (line) {
+      out.push({
+        text: line,
+        kind,
+        pause: kind === 'heading' ? 700 :
+               kind === 'item' ? 330 : 220
+      });
+    }
   }
-  // Strip formatting marks and symbols, but retain words and numerals.
-  line=line.replace(/\*\*(.*?)\*\*/g,'$1').replace(/__(.*?)__/g,'$1').replace(/\*(.*?)\*/g,'$1').replace(/_(.*?)_/g,'$1');
-  line=line.replace(/[\u200B-\u200D\uFEFF]/g,'').replace(/[\p{P}\p{S}]+/gu,' ')
-    .replace(/\s+/g,' ').trim();
-  if(line) out.push({text:line,kind,pause:kind==='heading'?700:(kind==='item'?330:220)});
- }
- return out;
+
+  return out;
 }
+
 function speakText(text){
  if(!('speechSynthesis' in window)){setStatus('Spoken answers are not supported in this browser.','error');return}
  state.speechRunId=(state.speechRunId||0)+1; const runId=state.speechRunId;
