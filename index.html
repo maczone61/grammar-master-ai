@@ -1,186 +1,384 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101827"><meta name="description" content="Grammar Master AI — an open-ended English grammar teacher."><title>Grammar Master AI</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<meta name="description" content="Grammar Master AI — an open-ended English grammar teacher.">
+<title>Grammar Master AI</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1220;--panel:#121d2e;--line:#2b3b52;--text:#edf4ff;--muted:#a9bad0;--accent:#82b7ff;--good:#83dfb1;--danger:#ffb4b4}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#15243a 0,#0b1220 58%);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}button,input,textarea,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.wrap{max-width:920px;margin:auto;padding:18px 14px 40px}.top{display:flex;align-items:center;gap:12px;padding:12px 2px 22px}.logo{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#a9d0ff,#548fe5);display:grid;place-items:center;color:#10213a;font-size:25px;font-weight:900}.brand{flex:1}.brand h1{font-size:clamp(22px,5vw,30px);line-height:1.1;margin:0}.brand p,.hero p{color:var(--muted);margin:5px 0 0;font-size:13px}.pill{border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 10px;font-size:12px}.hero{padding:23px 20px;background:linear-gradient(140deg,#172943,#111b2c);border:1px solid var(--line);border-radius:24px;margin-bottom:14px}.hero h2{font-size:clamp(23px,5vw,34px);line-height:1.16;margin:0 0 10px}.hero p{font-size:15px}.chips,.actions,.topactions,.msgtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.chips{margin-top:17px}.chip{border:1px solid #3a506c;background:#1b2c43;color:#d9e8ff;padding:8px 11px;border-radius:999px;font-size:13px}.panel{background:rgba(18,29,46,.95);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:14px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}select,input,textarea{width:100%;color:var(--text);background:#0c1626;border:1px solid #33465f;border-radius:12px;padding:12px}textarea{resize:vertical;min-height:118px;line-height:1.5}select{min-height:45px}.composer{display:flex;flex-direction:column;gap:11px}.hint,.warning{font-size:12px;color:var(--muted)}.btn{border:1px solid #3b506b;background:#20334d;color:var(--text);border-radius:12px;padding:10px 13px;font-weight:650}.btn.primary{background:var(--accent);border-color:var(--accent);color:#0a1a30}.btn.ghost{background:transparent}.btn:disabled{opacity:.5;cursor:not-allowed}.sendrow{display:flex}.sendrow .btn{width:100%}.chat{display:flex;flex-direction:column;gap:13px}.empty{text-align:center;padding:24px 10px;color:var(--muted)}.message{border:1px solid var(--line);border-radius:16px;padding:13px 14px;max-width:100%;overflow-wrap:anywhere}.message.user{background:#1b2d45;align-self:flex-end;width:min(94%,760px)}.message.assistant{background:#101a2a}.msghead{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);margin-bottom:8px}.msgbody{line-height:1.7}.msgbody p{margin:.45em 0}.msgbody h1,.msgbody h2,.msgbody h3,.msgbody h4{line-height:1.3;margin:1em 0 .4em;color:#d9e8ff}.msgbody ul,.msgbody ol{padding-left:1.5em}.msgbody li{margin:.2em 0}.msgbody strong{color:#f7fbff}.msgbody code{background:#1b2c43;border:1px solid #33465f;border-radius:5px;padding:1px 4px}.smallbtn{font-size:12px;border:1px solid var(--line);border-radius:9px;padding:5px 8px;background:#17263a;color:#dce9fb}.msgtools{margin-top:10px}.status{font-size:13px;color:var(--muted);min-height:20px;padding:4px 2px}.status.error{color:var(--danger)}.status.good{color:var(--good)}.footer{color:var(--muted);font-size:12px;text-align:center;padding:12px}.sectiontitle{font-size:14px;font-weight:750;margin:0 0 12px}.divider{height:1px;background:var(--line);margin:13px 0}.warning{margin:0}.hidden{display:none!important}@media(max-width:560px){.wrap{padding:12px 10px 28px}.top{padding-bottom:14px}.pill{display:none}.hero{padding:19px 16px}.controls{grid-template-columns:1fr}.panel{padding:12px}}
-</style></head><body><div class="wrap">
-<header class="top"><div class="logo" aria-hidden="true">G</div><div class="brand"><h1>Grammar Master AI</h1><p>Your personal English grammar teacher</p></div><span class="pill">Web app · No download</span></header>
-<section class="hero"><h2>Ask anything. Understand deeply.</h2><p>Ask an English grammar question, request a full lecture, explore examples, correct a sentence, or practise a topic. Continue asking follow-up questions naturally.</p><div class="chips"><button class="chip" data-prompt="Give me a detailed lecture on phrases and clauses, from basic to advanced, with classifications and examples.">Teach a topic</button><button class="chip" data-prompt="Explain the difference between a gerund and a present participle with clear examples and a short test.">Compare concepts</button><button class="chip" data-prompt="Analyse this sentence grammatically: Although it was raining, the children continued playing outside.">Analyse a sentence</button><button class="chip" data-prompt="Create 10 mixed exercises on subject-verb agreement. Put the questions first and the answer key with explanations at the end.">Practise grammar</button></div></section>
-<section class="panel"><div class="controls"><div class="field"><label for="mode">Teaching mode</label><select id="mode"><option value="discuss">Ask / Discuss</option><option value="lecture">Detailed lecture</option><option value="examples">Examples and explanation</option><option value="correct">Sentence correction</option><option value="exercise">Exercises and practice</option><option value="compare">Compare two concepts</option></select></div><div class="field"><label for="language">Explanation language</label><select id="language"><option>English</option><option>Bengali</option><option>Arabic</option><option>Hindi</option><option>Urdu</option><option>Spanish</option><option>French</option><option>Chinese</option><option>Japanese</option><option>Portuguese</option><option>Indonesian</option><option>Turkish</option><option>Other language requested in my message</option></select></div><div class="field"><label for="level">Learner level</label><select id="level"><option>Adapt to my question</option><option>Beginner</option><option>Elementary</option><option>Intermediate</option><option>Upper-intermediate</option><option>Advanced</option><option>SSC / school exam</option><option>HSC / college exam</option><option>Teacher / advanced grammar</option></select></div><div class="field"><label for="detail">Answer detail</label><select id="detail"><option value="balanced">Clear and thorough</option><option value="short">Short answer</option><option value="deep">Very detailed lecture</option></select></div></div></section>
-<section class="panel composer"><div class="field"><label for="question">Your question or topic</label><textarea id="question" placeholder="For example: Explain all types of group verbs with their uses in sentences…" maxlength="12000"></textarea><div class="hint">You can ask a question in your chosen explanation language. English examples and grammar terms will be included when useful.</div></div><div class="actions"><button class="btn" id="voiceIn" type="button">🎙 Speak</button><button class="btn" id="clearInput" type="button">Clear text</button><span class="hint" id="voiceNote"></span></div><div class="sendrow"><button class="btn primary" id="send" type="button">Ask teacher ↗</button></div><div class="status" id="status" role="status" aria-live="polite"></div></section>
-<section class="panel"><div class="topactions" style="justify-content:space-between"><h2 class="sectiontitle" style="margin:0">Teaching conversation</h2><div class="topactions"><button class="btn ghost" id="readAll" type="button">🔊 Read latest</button><button class="btn ghost" id="stopSpeech" type="button">Stop voice</button><button class="btn ghost" id="newChat" type="button">New conversation</button></div></div><div class="divider"></div><div id="chat" class="chat"><div class="empty" id="empty">Your lesson will appear here. Ask a question or enter a topic to begin.</div></div></section>
-<section class="panel"><h2 class="sectiontitle">Connect your AI backend</h2><p class="warning">Paste the URL of your separate Cloudflare Worker. Your AI credentials stay on the Worker.</p><div class="field" style="margin-top:10px"><label for="workerUrl">Cloudflare Worker URL</label><input id="workerUrl" type="url" inputmode="url" placeholder="https://your-worker.your-subdomain.workers.dev"></div><div class="actions"><button class="btn" id="saveUrl" type="button">Save backend URL on this device</button><button class="btn ghost" id="testUrl" type="button">Test connection</button></div><div class="status" id="backendStatus" role="status" aria-live="polite"></div></section>
-<footer class="footer">Grammar Master AI · AI-generated explanations can make mistakes; verify important exam rules with a trusted textbook.</footer></div>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121d2e;--line:#2b3b52;--text:#edf4ff;--muted:#a9bad0;--accent:#82b7ff;--good:#83dfb1;--danger:#ffb4b4}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#15243a 0,#0b1220 58%);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:920px;margin:auto;padding:18px 14px 40px}
+.top{display:flex;align-items:center;gap:12px;padding:12px 2px 22px}
+.logo{width:48px;height:48px;flex:0 0 48px;border-radius:15px;background:linear-gradient(135deg,#a9d0ff,#548fe5);display:grid;place-items:center;color:#10213a;font-size:25px;font-weight:900}
+.brand{flex:1;min-width:0}.brand h1{font-size:clamp(22px,5vw,30px);line-height:1.1;margin:0}
+.brand p,.hero p{color:var(--muted);margin:5px 0 0;font-size:13px}
+.pill{border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 10px;font-size:12px;white-space:nowrap}
+.hero{padding:23px 20px;background:linear-gradient(140deg,#172943,#111b2c);border:1px solid var(--line);border-radius:24px;margin-bottom:14px}
+.hero h2{font-size:clamp(23px,5vw,34px);line-height:1.16;margin:0 0 10px}.hero p{font-size:15px}
+.chips,.actions,.topactions,.msgtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chips{margin-top:17px}.chip{border:1px solid #3a506c;background:#1b2c43;color:#d9e8ff;padding:8px 11px;border-radius:999px;font-size:13px}
+.panel{background:rgba(18,29,46,.95);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:14px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+select,input,textarea{width:100%;color:var(--text);background:#0c1626;border:1px solid #33465f;border-radius:12px;padding:12px}
+textarea{resize:vertical;min-height:118px;line-height:1.5}select{min-height:45px}
+.composer{display:flex;flex-direction:column;gap:11px}.hint,.warning{font-size:12px;color:var(--muted)}
+.btn{border:1px solid #3b506b;background:#20334d;color:var(--text);border-radius:12px;padding:10px 13px;font-weight:650}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0a1a30}.btn.ghost{background:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}.sendrow{display:flex}.sendrow .btn{width:100%}
+.chat{display:flex;flex-direction:column;gap:13px}.empty{text-align:center;padding:24px 10px;color:var(--muted)}
+.message{border:1px solid var(--line);border-radius:16px;padding:13px 14px;max-width:100%;overflow-wrap:anywhere}
+.message.user{background:#1b2d45;align-self:flex-end;width:min(94%,760px)}.message.assistant{background:#101a2a}
+.msghead{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);margin-bottom:8px}
+.msgbody{line-height:1.7;overflow-wrap:anywhere}.msgbody p{margin:.45em 0}
+.msgbody h1,.msgbody h2,.msgbody h3,.msgbody h4{line-height:1.3;margin:1em 0 .4em;color:#d9e8ff}
+.msgbody ul,.msgbody ol{padding-left:1.5em}.msgbody li{margin:.2em 0}
+.msgbody strong{color:#f7fbff}.msgbody code{background:#1b2c43;border:1px solid #33465f;border-radius:5px;padding:1px 4px}
+.msgbody pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0b1422;border:1px solid var(--line);padding:10px;border-radius:10px}
+.smallbtn{font-size:12px;border:1px solid var(--line);border-radius:9px;padding:5px 8px;background:#17263a;color:#dce9fb}
+.msgtools{margin-top:10px}.status{font-size:13px;color:var(--muted);min-height:20px;padding:4px 2px}
+.status.error{color:var(--danger)}.status.good{color:var(--good)}.footer{color:var(--muted);font-size:12px;text-align:center;padding:12px}
+.sectiontitle{font-size:14px;font-weight:750;margin:0 0 12px}.divider{height:1px;background:var(--line);margin:13px 0}
+.warning{margin:0}.hidden{display:none!important}.backend-note{margin-top:8px}
+@media(max-width:560px){.wrap{padding:12px 10px 28px}.top{padding-bottom:14px}.pill{display:none}.hero{padding:19px 16px}.controls{grid-template-columns:1fr}.panel{padding:12px}.topactions{justify-content:flex-start!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+ <div class="logo" aria-hidden="true">G</div>
+ <div class="brand"><h1>Grammar Master AI</h1><p>Your personal English grammar teacher</p></div>
+ <span class="pill">Web app · No download</span>
+</header>
+
+<section class="hero">
+ <h2>Ask anything. Understand deeply.</h2>
+ <p>Ask an English grammar question, request a full lecture, explore examples, correct a sentence, or practise a topic. Continue asking follow-up questions naturally.</p>
+ <div class="chips">
+  <button class="chip" data-prompt="Give me a detailed lecture on phrases and clauses, from basic to advanced, with classifications and examples.">Teach a topic</button>
+  <button class="chip" data-prompt="Explain the difference between a gerund and a present participle with clear examples and a short test.">Compare concepts</button>
+  <button class="chip" data-prompt="Analyse this sentence grammatically: Although it was raining, the children continued playing outside.">Analyse a sentence</button>
+  <button class="chip" data-prompt="Create 10 mixed exercises on subject-verb agreement. Put the questions first and the answer key with explanations at the end.">Practise grammar</button>
+ </div>
+</section>
+
+<section class="panel">
+ <div class="controls">
+  <div class="field"><label for="mode">Teaching mode</label><select id="mode">
+   <option value="discuss">Ask / Discuss</option><option value="lecture">Detailed lecture</option><option value="examples">Examples and explanation</option><option value="correct">Sentence correction</option><option value="exercise">Exercises and practice</option><option value="compare">Compare two concepts</option>
+  </select></div>
+  <div class="field"><label for="language">Explanation language</label><select id="language">
+   <option>English</option><option>Bengali</option><option>Arabic</option><option>Hindi</option><option>Urdu</option><option>Spanish</option><option>French</option><option>Chinese</option><option>Japanese</option><option>Portuguese</option><option>Indonesian</option><option>Turkish</option><option>Other language requested in my message</option>
+  </select></div>
+  <div class="field"><label for="level">Learner level</label><select id="level">
+   <option>Adapt to my question</option><option>Beginner</option><option>Elementary</option><option>Intermediate</option><option>Upper-intermediate</option><option>Advanced</option><option>SSC / school exam</option><option>HSC / college exam</option><option>Teacher / advanced grammar</option>
+  </select></div>
+  <div class="field"><label for="detail">Answer detail</label><select id="detail">
+   <option value="balanced">Clear and thorough</option><option value="short">Short answer</option><option value="deep">Very detailed lecture</option>
+  </select></div>
+ </div>
+</section>
+
+<section class="panel composer">
+ <div class="field">
+  <label for="question">Your question or topic</label>
+  <textarea id="question" placeholder="For example: Explain all types of group verbs with their uses in sentences…" maxlength="12000"></textarea>
+  <div class="hint">Ask naturally—even enter only a topic name. Explanations use your selected language; English grammar terms and examples stay in English, including in speech.</div>
+ </div>
+ <div class="actions"><button class="btn" id="voiceIn" type="button">🎙 Speak</button><button class="btn" id="clearInput" type="button">Clear text</button><span class="hint" id="voiceNote"></span></div>
+ <div class="sendrow"><button class="btn primary" id="send" type="button">Ask teacher ↗</button></div>
+ <div class="status" id="status" role="status" aria-live="polite"></div>
+</section>
+
+<section class="panel">
+ <div class="topactions" style="justify-content:space-between">
+  <h2 class="sectiontitle" style="margin:0">Teaching conversation</h2>
+  <div class="topactions"><button class="btn ghost" id="readAll" type="button">🔊 Read latest</button><button class="btn ghost" id="stopSpeech" type="button">Stop voice</button><button class="btn ghost" id="newChat" type="button">New conversation</button></div>
+ </div>
+ <div class="divider"></div>
+ <div id="chat" class="chat"><div class="empty" id="empty">Your lesson will appear here. Ask a question or enter a topic to begin.</div></div>
+</section>
+
+<section class="panel">
+ <h2 class="sectiontitle">Connect your AI backend</h2>
+ <p class="warning">Paste the URL of your separate Cloudflare Worker. Your AI credentials stay on the Worker.</p>
+ <div class="field" style="margin-top:10px"><label for="workerUrl">Cloudflare Worker URL</label><input id="workerUrl" type="url" inputmode="url" placeholder="https://your-worker.your-subdomain.workers.dev" autocomplete="url"></div>
+ <div class="actions"><button class="btn" id="saveUrl" type="button">Save backend URL on this device</button><button class="btn ghost" id="testUrl" type="button">Test connection</button></div>
+ <div class="status" id="backendStatus" role="status" aria-live="polite"></div>
+ <p class="hint backend-note">Connection test checks the Worker health endpoint first. A successful connection test does not guarantee that the teaching model can complete every long lesson.</p>
+</section>
+<footer class="footer">Grammar Master AI · AI-generated explanations can make mistakes; verify important exam rules with a trusted textbook.</footer>
+</div>
+
 <script>
 (()=>{'use strict';
-const $=id=>document.getElementById(id);const state={messages:[],busy:false,recognition:null};const DEFAULT_URL='https://grammar-master-ai-api.maczone61.workers.dev';
-function setStatus(msg,type=''){const el=$('status');el.textContent=msg;el.className='status '+type}function setBackendStatus(msg,type=''){const el=$('backendStatus');el.textContent=msg;el.className='status '+type}function backendUrl(){return ($('workerUrl').value||'').trim().replace(/\/+$/,'')}
-function loadSettings(){try{$('workerUrl').value=localStorage.getItem('gmai_worker_url')||DEFAULT_URL;$('language').value=localStorage.getItem('gmai_language')||'English'}catch(e){}}function saveSettings(){try{localStorage.setItem('gmai_worker_url',backendUrl());localStorage.setItem('gmai_language',$('language').value);setBackendStatus('Saved on this device.','good')}catch(e){setBackendStatus('Could not save in this browser. You can still use the URL for this session.','error')}}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function formatInlineMarkdown(line){return line.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/__(.+?)__/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*(.+?)\*/g,'<em>$1</em>')}
-function renderMarkdown(text){const escaped=escapeHtml(String(text||'').replace(/\r/g,''));const lines=escaped.split('\n');let out='',listType='';const closeList=()=>{if(listType){out+='</'+listType+'>';listType=''}};for(const raw of lines){const line=raw.trim();if(!line){closeList();continue}const heading=line.match(/^(#{1,4})\s+(.+)$/);if(heading){closeList();const level=heading[1].length;out+='<h'+level+'>'+formatInlineMarkdown(heading[2])+'</h'+level+'>';continue}const bullet=line.match(/^[-*•]\s+(.+)$/),numbered=line.match(/^\d+[.)]\s+(.+)$/);if(bullet||numbered){const type=bullet?'ul':'ol';if(listType!==type){closeList();listType=type;out+='<'+type+'>'}out+='<li>'+formatInlineMarkdown(bullet?bullet[1]:numbered[1])+'</li>';continue}closeList();out+='<p>'+formatInlineMarkdown(line)+'</p>'}closeList();return out||'<p></p>'}
-function visibleText(text){return String(text||'').replace(/\[\[EN\]\]([\s\S]*?)\[\[\/EN\]\]/g,'$1')}
-function renderMessage(msg){$('empty')?.remove();const card=document.createElement('article');card.className='message '+(msg.role==='user'?'user':'assistant');const label=msg.role==='user'?'You':'Grammar Master AI';const visibleContent=visibleText(msg.content);card.innerHTML='<div class="msghead"><span>'+label+'</span><span>'+(msg.role==='assistant'?'Teacher response':'Your question')+'</span></div><div class="msgbody">'+(msg.role==='assistant'?renderMarkdown(visibleContent):escapeHtml(visibleContent).replace(/\n/g,'<br>'))+'</div>';if(msg.role==='assistant'){const tools=document.createElement('div');tools.className='msgtools';const speak=document.createElement('button');speak.className='smallbtn';speak.textContent='🔊 Read aloud';speak.onclick=()=>speakText(msg.content);const copy=document.createElement('button');copy.className='smallbtn';copy.textContent='Copy answer';copy.onclick=async()=>{try{await navigator.clipboard.writeText(visibleText(msg.content));copy.textContent='Copied'}catch(e){copy.textContent='Select and copy text'}};const follow=document.createElement('button');follow.className='smallbtn';follow.textContent='Ask a follow-up';follow.onclick=()=>{$('question').value='Please explain this further, using simpler words and more examples.';$('question').focus()};tools.append(speak,copy,follow);card.appendChild(tools)}$('chat').appendChild(card);card.scrollIntoView({behavior:'smooth',block:'nearest'});return card}
-function addMessage(role,content){const message={role,content};state.messages.push(message);return renderMessage(message)}
-function renderHistory(){$('chat').innerHTML='';if(!state.messages.length){const e=document.createElement('div');e.className='empty';e.id='empty';e.textContent='Your lesson will appear here. Ask a question or enter a topic to begin.';$('chat').appendChild(e);return}state.messages.forEach(renderMessage)}
-function buildModeInstruction(mode){return ({discuss:'Answer the exact question first, then explain clearly and continue naturally.',lecture:'Give a complete lecture with definition, classifications, rules, exceptions, examples, common errors, comparisons, and summary. End every lecture with at least 10 numbered exercise questions, followed by a separate answer key with explanations.',examples:'Explain the point and give varied natural examples, explaining each.',correct:'Correct the sentence if needed and explain each correction. If no sentence is given, teach the requested correction topic.',exercise:'Create at least 10 varied topic-specific exercise questions, not only gap-filling. Put all questions first, then a separate answer key with explanations.',compare:'Compare definition, function, form, differences, examples, and common confusion.'})[mode]||'Answer helpfully.'}
-function systemPrompt(){const language=$('language').value;const bilingualRule=language==='English'?'Write naturally in English.':'BILINGUAL TEACHING RULE — THIS IS MANDATORY: Explain and teach in '+language+', but keep every important English grammar term in English (for example, [[EN]]noun[[/EN]], [[EN]]verb[[/EN]], [[EN]]subject[[/EN]], [[EN]]object[[/EN]], [[EN]]tense[[/EN]]). Keep every example word, example phrase, example sentence, model dialogue, exercise question, answer option, and corrected English sentence in English only. Never translate English example sentences into '+language+'. Translate only the explanations, instructions about the examples, and commentary into '+language+'. Whenever you write an English grammar term, English example, or full English sentence, wrap that English span in the exact markers [[EN]] and [[/EN]], e.g. [[EN]]A noun names a person, place, thing, or idea.[[/EN]]. Do not put markers around the '+language+' explanation. These markers will be hidden from learners and used to make the English portions speak with an English voice and explanations speak with the selected language voice. Apply this rule to headings, tables, exercises, answer keys, and follow-up answers too. Do not write any example sentence in the explanation language; all example sentences must be English.';return `You are Grammar Master AI, a capable, patient, rigorous English grammar teacher. Answer open-ended questions, discuss grammar, give examples, analyse and correct sentences, generate lessons and exercises.\nTEACHING MODE: ${buildModeInstruction($('mode').value)}\nLEARNER LEVEL: ${$('level').value}.\nEXPLANATION LANGUAGE: ${language}.\n${bilingualRule}\nDETAIL: ${$('detail').value}.\nMANDATORY LECTURE PRACTICE RULE: Whenever you give a lecture, detailed lesson, or teach a grammar topic from scratch, finish with a section titled 'Exercise' (translate this heading into the selected explanation language if appropriate) containing AT LEAST 10 numbered questions based specifically on that lesson. Never provide fewer than 10. Include a useful mix of identification, classification, multiple choice, correction, and sentence-based questions when suitable; do not make all questions gap-fills. Put the complete answer key with brief explanations in a separate section AFTER all questions so learners can try first. If the learner explicitly asks for more than 10, follow the larger number. Keep every English grammar term, example, exercise sentence, question, and answer option in English; in non-English modes, wrap each English span in [[EN]]...[[/EN]] so the speech feature can switch voices. Keep teaching explanations and exercise instructions in the selected language. The 10-question minimum applies to every selected explanation language, not only English or Bengali. In short conversational answers that are not lectures, do not force a full exercise set unless the user asks for one.\nRules: Answer the exact question. If only a topic is named, teach it proactively. Give accurate natural examples. Distinguish modern grammar from traditional school terminology where relevant. Audit exercises and answer keys. A possessive determiner before a noun (my, your, its, their) is not a possessive pronoun in modern grammar; traditional school grammar may call it a possessive adjective. Possessive pronouns stand independently (mine, yours, hers, ours, theirs). Never omit correct answers from options. Avoid ambiguous blanks. Use prior conversation for follow-ups. Be respectful, clear, and accurate. Do not claim to browse the internet.`}
+const $=id=>document.getElementById(id);
+const state={messages:[],busy:false,recognition:null,speechRunId:0};
+const DEFAULT_URL='https://grammar-master-ai-api.maczone61.workers.dev';
+const REQUEST_TIMEOUT=150000;
+
+function setStatus(msg,type=''){const el=$('status');el.textContent=msg;el.className='status '+type;}
+function setBackendStatus(msg,type=''){const el=$('backendStatus');el.textContent=msg;el.className='status '+type;}
+function backendUrl(){return ($('workerUrl').value||'').trim().replace(/\/+$/,'');}
+function validWorkerUrl(url){try{const u=new URL(url);return u.protocol==='https:'&&u.hostname.endsWith('.workers.dev')||u.protocol==='https:'&&u.hostname.includes('.');}catch(e){return false;}}
+function loadSettings(){
+ try{$('workerUrl').value=localStorage.getItem('gmai_worker_url')||DEFAULT_URL;$('language').value=localStorage.getItem('gmai_language')||'English';}
+ catch(e){$('workerUrl').value=DEFAULT_URL;}
+}
+function saveSettings(){
+ const url=backendUrl();
+ if(!validWorkerUrl(url)){setBackendStatus('Enter a valid HTTPS Cloudflare Worker URL.','error');return;}
+ try{localStorage.setItem('gmai_worker_url',url);localStorage.setItem('gmai_language',$('language').value);setBackendStatus('Backend URL and language preference saved on this device.','good');}
+ catch(e){setBackendStatus('Browser storage is unavailable. The URL can still be used for this session.','error');}
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function inlineMarkdown(s){
+ return s.replace(/`([^`]+)`/g,'<code>$1</code>')
+ .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+ .replace(/__(.+?)__/g,'<strong>$1</strong>')
+ .replace(/\*(.+?)\*/g,'<em>$1</em>')
+ .replace(/_(.+?)_/g,'<em>$1</em>');
+}
+function renderMarkdown(source){
+ const lines=escapeHtml(String(source||'').replace(/\r/g,'')).split('\n');
+ let out='',listType='',inCode=false,codeLines=[];
+ const closeList=()=>{if(listType){out+='</'+listType+'>';listType='';}};
+ const closeCode=()=>{if(inCode){out+='<pre><code>'+codeLines.join('\n')+'</code></pre>';codeLines=[];inCode=false;}};
+ for(const raw of lines){
+  const line=raw.trim();
+  if(/^```/.test(line)){closeList();if(inCode)closeCode();else inCode=true;continue;}
+  if(inCode){codeLines.push(raw);continue;}
+  if(!line){closeList();continue;}
+  const heading=line.match(/^(#{1,4})\s+(.+)$/);
+  if(heading){closeList();const n=heading[1].length;out+='<h'+n+'>'+inlineMarkdown(heading[2])+'</h'+n+'>';continue;}
+  if(/^([-*_])\1\1+$/.test(line)){closeList();out+='<hr>';continue;}
+  const bullet=line.match(/^[-*•]\s+(.+)$/),numbered=line.match(/^\d+[.)]\s+(.+)$/);
+  if(bullet||numbered){const type=bullet?'ul':'ol';if(listType!==type){closeList();listType=type;out+='<'+type+'>';}out+='<li>'+inlineMarkdown(bullet?bullet[1]:numbered[1])+'</li>';continue;}
+  closeList();
+  if(/^>\s?/.test(line)){out+='<blockquote>'+inlineMarkdown(line.replace(/^>\s?/,''))+'</blockquote>';continue;}
+  out+='<p>'+inlineMarkdown(line)+'</p>';
+ }
+ closeList();closeCode();return out||'<p></p>';
+}
+function visibleText(text){return String(text||'').replace(/\[\[EN\]\]([\s\S]*?)\[\[\/EN\]\]/g,'$1').replace(/\[\[\/?EN\]\]/g,'');}
+function renderMessage(msg){
+ $('empty')?.remove();
+ const card=document.createElement('article');card.className='message '+(msg.role==='user'?'user':'assistant');
+ const label=msg.role==='user'?'You':'Grammar Master AI';
+ const body=document.createElement('div');body.className='msgbody';
+ body.innerHTML=msg.role==='assistant'?renderMarkdown(visibleText(msg.content)):escapeHtml(visibleText(msg.content)).replace(/\n/g,'<br>');
+ const head=document.createElement('div');head.className='msghead';
+ const who=document.createElement('span');who.textContent=label;
+ const kind=document.createElement('span');kind.textContent=msg.role==='assistant'?'Teacher response':'Your question';
+ head.append(who,kind);card.append(head,body);
+ if(msg.role==='assistant'){
+  const tools=document.createElement('div');tools.className='msgtools';
+  const speak=document.createElement('button');speak.className='smallbtn';speak.type='button';speak.textContent='🔊 Read aloud';speak.onclick=()=>speakText(msg.content);
+  const copy=document.createElement('button');copy.className='smallbtn';copy.type='button';copy.textContent='Copy answer';
+  copy.onclick=async()=>{try{await navigator.clipboard.writeText(visibleText(msg.content));copy.textContent='Copied';}catch(e){copy.textContent='Copy unavailable';}};
+  const follow=document.createElement('button');follow.className='smallbtn';follow.type='button';follow.textContent='Ask a follow-up';
+  follow.onclick=()=>{$('question').value='Please explain this further, using simpler words and more examples.';$('question').focus();};
+  tools.append(speak,copy,follow);card.appendChild(tools);
+ }
+ $('chat').appendChild(card);card.scrollIntoView({behavior:'smooth',block:'nearest'});return card;
+}
+function addMessage(role,content){const message={role,content};state.messages.push(message);return renderMessage(message);}
+function renderHistory(){
+ $('chat').innerHTML='';
+ if(!state.messages.length){const e=document.createElement('div');e.className='empty';e.id='empty';e.textContent='Your lesson will appear here. Ask a question or enter a topic to begin.';$('chat').appendChild(e);return;}
+ state.messages.forEach(renderMessage);
+}
+function extractAnswer(data){
+ if(typeof data==='string')return data.trim();
+ if(!data||typeof data!=='object')return '';
+ const candidates=[data.answer,data.response,data.output,data.result,data.message,data.content,
+  data.choices?.[0]?.message?.content,data.choices?.[0]?.text,
+  data.result?.answer,data.data?.answer];
+ for(const item of candidates)if(typeof item==='string'&&item.trim())return item.trim();
+ return '';
+}
+async function readResponse(response){
+ const raw=await response.text();
+ let data=null;
+ try{data=JSON.parse(raw);}catch(e){}
+ if(!data&&raw.trim())throw new Error('The Worker returned text or HTML instead of JSON (HTTP '+response.status+'). Check that the Worker URL points to the API Worker, not a website page.');
+ if(!response.ok)throw new Error((data&&(data.error||data.message))||('Worker request failed with HTTP '+response.status+'.'));
+ return data;
+}
 async function sendQuestion(){
  if(state.busy)return;
  const originalQuestion=$('question').value.trim();
- if(!originalQuestion){setStatus('Please enter a question or grammar topic first.','error');$('question').focus();return}
+ if(!originalQuestion){setStatus('Please enter a question or grammar topic first.','error');$('question').focus();return;}
  const url=backendUrl();
- if(!url){setStatus('Please enter and save your Cloudflare Worker URL in the backend section below.','error');return}
- state.busy=true;const send=$('send');const oldLabel=send.textContent;send.disabled=true;send.textContent='Teacher is preparing…';
- setStatus('Thinking and preparing your explanation…');
- const mode=$('mode').value, language=$('language').value, level=$('level').value, detail=$('detail').value;
- const topicTeachingRule=`MANDATORY TEACHING STRUCTURE: If the learner names an English grammar topic or asks to learn a topic from scratch, teach it proactively and include at least 10 numbered topic-specific Exercise questions followed by a separate Answer key with explanations, regardless of the selected mode. Keep all technical English grammar terms and category names in English only. NEVER translate them into the selected explanation language or add translated equivalents in brackets. Explanatory prose may use the selected language. Keep all English examples and English test sentences in English. For classifications, state which framework is being used and list accurate, distinct category names in English before explaining them. Do not invent a fixed count where classifications vary. Check every example matches its category. For a simple factual question that is not asking to learn a topic, answer directly without forcing a full lesson. Do not repeat these instructions to the learner.`;
- const effectiveQuestion=topicTeachingRule+'\n\nLEARNER QUESTION: '+originalQuestion;
- // Keep context small so the Worker model can answer promptly on mobile.
- const history=state.messages.slice(-4).map(m=>({role:m.role,content:String(m.content||'').slice(-1400)}));
+ if(!validWorkerUrl(url)){setStatus('Enter a valid HTTPS Worker URL in the backend section.','error');$('workerUrl').focus();return;}
+ state.busy=true;
+ const send=$('send'),oldLabel=send.textContent;send.disabled=true;send.textContent='Teacher is preparing…';
+ setStatus('Sending your question to the teacher…');
+ const settings={mode:$('mode').value,language:$('language').value,level:$('level').value,detail:$('detail').value};
+ const history=state.messages.slice(-8).map(m=>({role:m.role,content:String(m.content||'').slice(-2500)}));
  addMessage('user',originalQuestion);
- let requestTimer=null;let requestController=null;let waitingTimer=null;
+ const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),REQUEST_TIMEOUT);
+ let waitingTimer=window.setTimeout(()=>{if(state.busy)setStatus('The teacher is still preparing your answer. Longer lectures may take a little time.');},10000);
  try{
-  requestController=new AbortController();
-  requestTimer=window.setTimeout(()=>requestController.abort(),45000);
-  waitingTimer=window.setTimeout(()=>{if(state.busy)setStatus('Still thinking and preparing your explanation…');},8000);
-  const response=await fetch(url+'/teach',{method:'POST',headers:{'Content-Type':'application/json'},signal:requestController.signal,body:JSON.stringify({question:effectiveQuestion,history,settings:{mode,language,level,detail}})});
-  setStatus('The teacher responded. Preparing the lesson…');
-  const raw=await response.text();let data;
-  try{data=JSON.parse(raw)}catch(_){throw new Error('The Worker returned a non-JSON response (HTTP '+response.status+'). Open the backend section and tap Test connection.')}
-  if(!response.ok)throw new Error(data.error||('Request failed with HTTP '+response.status));
-  const answer=typeof data.answer==='string'?data.answer.trim():'';
-  if(!answer)throw new Error(data.error||'The teacher returned an empty answer. Please try again.');
+  const response=await fetch(url+'/teach',{
+   method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+   signal:controller.signal,
+   body:JSON.stringify({question:originalQuestion,history,settings})
+  });
+  setStatus('Response received. Checking the lesson…');
+  const data=await readResponse(response);
+  const answer=extractAnswer(data);
+  if(!answer)throw new Error((data&&(data.error||data.message))||'The Worker returned valid JSON, but no answer text was found. The Worker should return an object containing an "answer" string.');
   addMessage('assistant',answer);setStatus('Lesson received. You can ask a follow-up question.','good');$('question').value='';
  }catch(error){
-  let message=error&&error.message?error.message:'Unknown connection error';
-  if(error&&error.name==='AbortError')message='The Worker did not finish within 45 seconds. The request reached the waiting stage, but the AI service may be slow or stuck. Tap Test connection below. If that says Connected but lessons still time out, the Cloudflare Worker/AI model needs fixing.';
-  else if(/failed to fetch|networkerror/i.test(message))message='The browser could not receive a response. Check your internet connection, then tap Test connection below to check the Worker URL and CORS.';
+  let message=error?.message||'Unknown connection error';
+  if(error?.name==='AbortError')message='The request exceeded 150 seconds. The Worker may be slow or the AI model may be stuck. Test the backend connection. If the connection test succeeds but teaching still times out, the Worker/model code needs attention.';
+  else if(/failed to fetch|networkerror|load failed/i.test(message))message='The browser could not receive a response. Check your internet connection, Worker URL, and the Worker CORS settings.';
   setStatus('Could not create the lesson: '+message,'error');
- }finally{if(requestTimer!==null)window.clearTimeout(requestTimer);if(waitingTimer!==null)window.clearTimeout(waitingTimer);state.busy=false;send.disabled=false;send.textContent=oldLabel;}
+ }finally{
+  window.clearTimeout(timer);window.clearTimeout(waitingTimer);state.busy=false;send.disabled=false;send.textContent=oldLabel;
+ }
 }
 
-function speechSegments(rawText) {
-  // Prepare readable speech while preserving lesson content.
-  const source = String(rawText || '')
-    .replace(/\r/g, '')
-    .replace(/\[\[EN\]\]|\[\[\/EN\]\]/g, '')
-    .replace(/```[\s\S]*?```/g, ' ')
-    .replace(/`([^`]*)`/g, '$1')
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/\[([^\]]+)\]\(https?:\/\/[^)]*\)/g, '$1')
-    .replace(/https?:\/\/\S+/gi, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, ' and ')
-    .replace(/&lt;/gi, ' ')
-    .replace(/&gt;/gi, ' ')
-    .replace(/&quot;/gi, ' ')
-    .replace(/&#39;|&apos;/gi, ' ')
-    .replace(/<[^>]*>/g, ' ');
-
-  const lines = source.split('\n');
-  const out = [];
-
-  for (const raw of lines) {
-    let line = raw.trim();
-    if (!line) {
-      if (out.length) {
-        out[out.length - 1].pause =
-          Math.max(out[out.length - 1].pause || 0, 260);
-      }
-      continue;
-    }
-
-    let kind = 'text';
-
-    const heading = line.match(/^#{1,6}\s+(.+)$/);
-    if (heading) {
-      line = heading[1];
-      kind = 'heading';
-    } else if (/^[-*_]{3,}$/.test(line)) {
-      continue;
-    } else {
-      const numbered = line.match(/^(\d{1,3})[.)]\s+(.+)$/);
-      const bullet = line.match(/^[-+*•]\s+(.+)$/);
-
-      if (numbered) {
-        line = 'Number ' + numbered[1] + '. ' + numbered[2];
-        kind = 'item';
-      } else if (bullet) {
-        line = bullet[1];
-        kind = 'item';
-      }
-    }
-
-    // Remove Markdown emphasis without removing its words.
-    line = line
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/__(.*?)__/g, '$1')
-      .replace(/\*(.*?)\*/g, '$1')
-      .replace(/_(.*?)_/g, '$1')
-      .replace(/~~(.*?)~~/g, '$1');
-
-    // Remove remaining formatting symbols and invisible characters.
-    line = line
-      .replace(/[\u200B-\u200D\uFEFF]/g, '')
-      .replace(/[\p{P}\p{S}]+/gu, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    if (line) {
-      out.push({
-        text: line,
-        kind,
-        pause: kind === 'heading' ? 700 :
-               kind === 'item' ? 330 : 220
-      });
-    }
+/* Speech: remove Markdown syntax and symbols before creating speech utterances. */
+function speechSegments(rawText){
+ let text=visibleText(String(rawText||'')).replace(/\r/g,'');
+ text=text.replace(/```[\s\S]*?```/g,' ');
+ text=text.replace(/`([^`]*)`/g,'$1');
+ text=text.replace(/!\[([^\]]*)\]\([^)]+\)/g,'$1');
+ text=text.replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');
+ text=text.replace(/https?:\/\/\S+/gi,' ');
+ text=text.replace(/^\s{0,3}#{1,6}\s*/gm,'');
+ text=text.replace(/^\s*>\s?/gm,'');
+ text=text.replace(/^\s*(?:[-+*•]|\d{1,3}[.)])\s+/gm,'');
+ text=text.replace(/^\s*[-*_]{3,}\s*$/gm,'');
+ text=text.replace(/\|/g,' ');
+ const protectedTerms=[
+ 'possessive determiner','possessive pronoun','relative pronoun','reflexive pronoun','demonstrative pronoun','interrogative pronoun','indefinite pronoun','reciprocal pronoun',
+ 'relative clause','adverbial clause','noun clause','independent clause','dependent clause','subordinate clause','main clause',
+ 'finite verb','non-finite verb','auxiliary verb','modal verb','phrasal verb','linking verb','transitive verb','intransitive verb',
+ 'countable noun','uncountable noun','proper noun','common noun','collective noun','abstract noun','concrete noun',
+ 'question mark','exclamation mark','quotation mark','full stop','semicolon','capital letter','capitalization','punctuation',
+ 'sentence','clause','phrase','subject','predicate','object','complement','modifier','determiner','article','noun','pronoun','verb','adjective','adverb','preposition','conjunction','interjection',
+ 'gerund','participle','infinitive','tense','aspect','voice','mood','syllable','word','letter','sound','prefix','suffix','affix','root','stem','singular','plural','comma','apostrophe','period'
+ ];
+ const escapedTerms=protectedTerms.sort((a,b)=>b.length-a.length).map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+ const termRegex=new RegExp('(?<![\\p{L}\\p{N}])('+escapedTerms+')(?![\\p{L}\\p{N}])','giu');
+ text=text.replace(/\[\[EN\]\]([\s\S]*?)\[\[\/EN\]\]/g,(all,inside)=>'\u0001'+inside.replace(termRegex,'\u0002$1\u0003')+'\u0004');
+ text=text.replace(termRegex,'[[EN]]$1[[/EN]]').replace(/\u0001/g,'[[EN]]').replace(/\u0002/g,'').replace(/\u0003/g,'').replace(/\u0004/g,'[[/EN]]');
+ const lines=text.split('\n'),segments=[];
+ const clean=s=>String(s)
+  .replace(/\*\*(.*?)\*\*/g,'$1').replace(/__(.*?)__/g,'$1')
+  .replace(/(^|[^*])\*([^*]+)\*(?!\*)/g,'$1$2')
+  .replace(/(^|[^_])_([^_]+)_(?!_)/g,'$1$2')
+  .replace(/<[^>]*>/g,' ')
+  .replace(/[\u200B-\u200D\uFEFF]/g,'')
+  .replace(/[*_#`~|]/g,' ')
+  .replace(/[{}\[\]]/g,' ')
+  .replace(/\s+/g,' ').trim();
+ for(let raw of lines){
+  let line=raw.trim();if(!line){if(segments.length)segments[segments.length-1].pause=Math.max(segments[segments.length-1].pause||0,300);continue;}
+  let kind='text';
+  const heading=line.match(/^\s{0,3}#{1,6}\s+(.+)$/);if(heading){line=heading[1];kind='heading';}
+  else{const n=line.match(/^\s*(\d{1,3})[.)]\s+(.+)$/),b=line.match(/^\s*[-+*•]\s+(.+)$/);if(n){line=n[2];kind='item';}else if(b){line=b[1];kind='item';}}
+  const marker=/\[\[EN\]\]([\s\S]*?)\[\[\/EN\]\]/g;let last=0,m;
+  while((m=marker.exec(line))!==null){
+   const before=clean(line.slice(last,m.index));if(before)segments.push({text:before,lang:'selected',kind,pause:kind==='heading'?550:150});
+   const english=clean(m[1]);if(english)segments.push({text:english,lang:'en',kind,pause:180});
+   last=marker.lastIndex;
   }
-
-  return out;
+  const after=clean(line.slice(last));if(after)segments.push({text:after,lang:'selected',kind,pause:kind==='heading'?550:(kind==='item'?280:150)});
+ }
+ return segments.filter(s=>s.text);
 }
-
-function speakText(text){
- if(!('speechSynthesis' in window)){setStatus('Spoken answers are not supported in this browser.','error');return}
- state.speechRunId=(state.speechRunId||0)+1; const runId=state.speechRunId;
- window.speechSynthesis.cancel();
+function speakText(rawText){
+ if(!('speechSynthesis'in window)){setStatus('Spoken answers are not supported in this browser.','error');return;}
+ state.speechRunId++;const runId=state.speechRunId;window.speechSynthesis.cancel();
  const language=$('language').value;
  const languageMap={English:'en-US',Bengali:'bn-BD',Arabic:'ar-SA',Hindi:'hi-IN',Urdu:'ur-PK',Spanish:'es-ES',French:'fr-FR',Chinese:'zh-CN',Japanese:'ja-JP',Portuguese:'pt-PT',Indonesian:'id-ID',Turkish:'tr-TR'};
- const selectedLang=languageMap[language]||'en-US';
- const segments=speechSegments(text);
- if(!segments.length){setStatus('There is no readable text to speak.','error');return}
- function chooseVoice(){
-  const voices=window.speechSynthesis.getVoices()||[];
-  const base=selectedLang.split('-')[0].toLowerCase();
-  const exact=voices.filter(v=>v.lang&&v.lang.toLowerCase()===selectedLang.toLowerCase());
-  const matching=exact.length?exact:voices.filter(v=>v.lang&&v.lang.toLowerCase().split('-')[0]===base);
-  // Never silently switch to an English voice for a non-English explanation.
+ const selectedLang=languageMap[language]||'en-US',segments=speechSegments(rawText);
+ if(!segments.length){setStatus('There is no readable text to speak.','error');return;}
+ function chooseVoice(locale){
+  const voices=window.speechSynthesis.getVoices()||[],base=locale.split('-')[0].toLowerCase();
+  const matching=voices.filter(v=>v.lang&&v.lang.toLowerCase().split('-')[0]===base);
   if(!matching.length)return null;
-  if(language==='Bengali')return matching.find(v=>/google.*বাংলা|google.*bengali|bengali.*google/i.test(v.name))||matching.find(v=>/google/i.test(v.name))||matching[0];
   return matching.find(v=>/google/i.test(v.name))||matching.find(v=>!/compact/i.test(v.name))||matching[0];
  }
- let index=0;
- function speakNext(){
-  if(runId!==state.speechRunId||index>=segments.length)return;
-  const seg=segments[index++];
-  const voice=chooseVoice();
-  if(!voice && language!=='English'){
-   setStatus('No installed voice was found for '+language+'. Install or enable its Google text-to-speech voice in Android settings for clearer speech.','error');return;
-  }
-  const utter=new SpeechSynthesisUtterance(seg.text);
-  utter.lang=selectedLang; if(voice)utter.voice=voice;
-  utter.rate=0.82; utter.pitch=1; utter.volume=1;
-  utter.onend=()=>{if(runId===state.speechRunId)window.setTimeout(speakNext,seg.pause||180)};
-  utter.onerror=()=>{if(runId===state.speechRunId)window.setTimeout(speakNext,seg.pause||250)};
+ let index=0,missing=new Set();
+ function next(){
+  if(runId!==state.speechRunId)return;
+  if(index>=segments.length){if(missing.size)setStatus('Voice unavailable for: '+Array.from(missing).join(', ')+'. Install the corresponding Android text-to-speech voice.','error');else setStatus('Finished reading the answer.','good');return;}
+  const seg=segments[index++],locale=seg.lang==='en'?'en-US':selectedLang;
+  let voice=chooseVoice(locale);
+  if(!voice&&locale!=='en-US'){missing.add(language);voice=chooseVoice('en-US');}
+  if(!voice){setStatus('No suitable text-to-speech voice is installed. Enable a voice in Android text-to-speech settings.','error');return;}
+  const utter=new SpeechSynthesisUtterance(seg.text);utter.lang=voice.lang||locale;utter.voice=voice;utter.rate=.86;utter.pitch=1;utter.volume=1;
+  utter.onend=()=>{if(runId===state.speechRunId)window.setTimeout(next,seg.pause||150);};
+  utter.onerror=()=>{if(runId===state.speechRunId)window.setTimeout(next,seg.pause||200);};
   window.speechSynthesis.speak(utter);
  }
- // Wait briefly for Android's voice list to populate before choosing a voice.
- const voices=window.speechSynthesis.getVoices();
- if(voices&&voices.length)speakNext();
- else {let started=false;const begin=()=>{if(started||runId!==state.speechRunId)return;started=true;window.speechSynthesis.removeEventListener?.('voiceschanged',begin);speakNext()};window.speechSynthesis.addEventListener?.('voiceschanged',begin);setTimeout(begin,700);}
+ const begin=()=>{if(runId===state.speechRunId)next();};
+ if(window.speechSynthesis.getVoices().length)begin();
+ else{window.speechSynthesis.addEventListener?.('voiceschanged',begin,{once:true});window.setTimeout(begin,1200);}
 }
-function setupVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('voiceIn').disabled=true;$('voiceNote').textContent='Voice input is not available in this browser; type instead.';return}const rec=new SR();rec.interimResults=false;rec.continuous=false;rec.maxAlternatives=1;rec.onstart=()=>{$('voiceIn').textContent='Listening… tap to stop';setStatus('Listening. Speak your question.');};rec.onresult=e=>{$('question').value=($('question').value+' '+e.results[0][0].transcript).trim();$('question').focus();setStatus('Voice input added. Review it, then tap Ask teacher.','good')};rec.onerror=e=>setStatus('Voice input issue: '+e.error+'. You can type instead.','error');rec.onend=()=>{$('voiceIn').textContent='🎙 Speak';state.recognition=null};$('voiceIn').onclick=()=>{if(state.recognition){rec.stop();return}try{const map={English:'en-US',Bengali:'bn-BD',Arabic:'ar-SA',Hindi:'hi-IN',Urdu:'ur-PK',Spanish:'es-ES',French:'fr-FR',Chinese:'zh-CN',Japanese:'ja-JP',Portuguese:'pt-PT',Indonesian:'id-ID',Turkish:'tr-TR'};rec.lang=map[$('language').value]||'en-US';state.recognition=rec;rec.start()}catch(e){setStatus('Could not start voice input. Try again or type your question.','error')}}}
-$('send').addEventListener('click',()=>sendQuestion());$('question').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();sendQuestion()}});document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{$('question').value=b.dataset.prompt;$('question').focus();window.scrollTo({top:$('question').getBoundingClientRect().top+window.scrollY-80,behavior:'smooth'})}));$('clearInput').onclick=()=>{$('question').value=''};$('saveUrl').onclick=saveSettings;$('testUrl').onclick=async()=>{const url=backendUrl();if(!url){setBackendStatus('Paste your Worker URL first.','error');return}setBackendStatus('Testing connection…');try{const r=await fetch(url+'/test-ai');const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'AI test failed (HTTP '+r.status+').');setBackendStatus('Connected. AI model test passed.','good')}catch(e){setBackendStatus('Could not connect: '+e.message+'. Check the URL and Worker deployment.','error')}};$('newChat').onclick=()=>{state.speechRunId=(state.speechRunId||0)+1;if('speechSynthesis'in window)window.speechSynthesis.cancel();if(state.busy){setStatus('Voice stopped. Wait for the current answer to finish before starting a new conversation.');return}state.messages=[];renderHistory();setStatus('New conversation started. Previous messages are cleared from this page.')};$('readAll').onclick=()=>{const last=[...state.messages].reverse().find(m=>m.role==='assistant');if(last)speakText(last.content);else setStatus('There is no answer to read yet.','error')};$('stopSpeech').onclick=()=>{state.speechRunId=(state.speechRunId||0)+1;if('speechSynthesis'in window)window.speechSynthesis.cancel();setStatus('Voice stopped.')};$('language').addEventListener('change',()=>{try{localStorage.setItem('gmai_language',$('language').value)}catch(e){}});loadSettings();setupVoice();
+function setupVoiceInput(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){$('voiceIn').disabled=true;$('voiceNote').textContent='Voice input is not available in this browser; type instead.';return;}
+ const rec=new SR();rec.interimResults=false;rec.continuous=false;rec.maxAlternatives=1;
+ rec.onstart=()=>{$('voiceIn').textContent='Listening… tap to stop';setStatus('Listening. Speak your question.');};
+ rec.onresult=e=>{$('question').value=($('question').value+' '+e.results[0][0].transcript).trim();$('question').focus();setStatus('Voice input added. Review it, then tap Ask teacher.','good');};
+ rec.onerror=e=>setStatus('Voice input issue: '+e.error+'. You can type instead.','error');
+ rec.onend=()=>{$('voiceIn').textContent='🎙 Speak';state.recognition=null;};
+ $('voiceIn').onclick=()=>{
+  if(state.recognition){rec.stop();return;}
+  const map={English:'en-US',Bengali:'bn-BD',Arabic:'ar-SA',Hindi:'hi-IN',Urdu:'ur-PK',Spanish:'es-ES',French:'fr-FR',Chinese:'zh-CN',Japanese:'ja-JP',Portuguese:'pt-PT',Indonesian:'id-ID',Turkish:'tr-TR'};
+  rec.lang=map[$('language').value]||'en-US';state.recognition=rec;
+  try{rec.start();}catch(e){state.recognition=null;setStatus('Could not start voice input. Try again or type your question.','error');}
+ };
+}
+async function testBackend(){
+ const url=backendUrl();
+ if(!validWorkerUrl(url)){setBackendStatus('Enter a valid HTTPS Worker URL first.','error');return;}
+ setBackendStatus('Testing Worker connection…');
+ const paths=['/health','/test-ai'];
+ let lastError='No health endpoint responded.';
+ for(const path of paths){
+  try{
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+   const response=await fetch(url+path,{method:'GET',headers:{'Accept':'application/json'},signal:controller.signal});
+   clearTimeout(timer);
+   const data=await readResponse(response);
+   if(response.ok){
+    const healthy=data?.ok===false?false:true;
+    if(!healthy)throw new Error(data.error||'Worker reported that the service is not ready.');
+    const model=data.model?' Model: '+data.model+'.':'';
+    setBackendStatus('Worker connected successfully at '+path+'.'+model,'good');return;
+   }
+  }catch(e){lastError=e?.message||String(e);}
+ }
+ setBackendStatus('Could not confirm the backend. '+lastError+' Check the Worker deployment and make sure it has a GET /health or GET /test-ai endpoint.','error');
+}
+$('send').addEventListener('click',sendQuestion);
+$('question').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();sendQuestion();}});
+document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{$('question').value=b.dataset.prompt;$('question').focus();window.scrollTo({top:$('question').getBoundingClientRect().top+window.scrollY-80,behavior:'smooth'});}));
+$('clearInput').onclick=()=>{$('question').value='';$('question').focus();};
+$('saveUrl').onclick=saveSettings;$('testUrl').onclick=testBackend;
+$('newChat').onclick=()=>{
+ state.speechRunId++;if('speechSynthesis'in window)window.speechSynthesis.cancel();
+ if(state.busy){setStatus('The current request is still running. Wait for it to finish before starting a new conversation.');return;}
+ state.messages=[];renderHistory();setStatus('New conversation started. Previous messages are cleared from this page.');
+};
+$('readAll').onclick=()=>{const last=[...state.messages].reverse().find(m=>m.role==='assistant');if(last)speakText(last.content);else setStatus('There is no answer to read yet.','error');};
+$('stopSpeech').onclick=()=>{state.speechRunId++;if('speechSynthesis'in window)window.speechSynthesis.cancel();setStatus('Voice stopped.');};
+$('language').addEventListener('change',()=>{try{localStorage.setItem('gmai_language',$('language').value);}catch(e){}});
+loadSettings();setupVoiceInput();
 })();
-</script></body></html>
+</script>
+</body>
+</html>
