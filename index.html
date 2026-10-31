@@ -113,13 +113,13 @@ textarea{resize:vertical;min-height:118px;line-height:1.5}select{min-height:45px
  <div class="status" id="backendStatus" role="status" aria-live="polite"></div>
  <p class="hint backend-note">Connection test checks the Worker health endpoint first. A successful connection test does not guarantee that the teaching model can complete every long lesson.</p>
 </section>
-<footer class="footer">Grammar Master AI · AI-generated explanations can make mistakes; verify important exam rules with a trusted textbook.</footer>
+<footer class="footer">Grammar Master AI · Lessons may be delivered in consecutive parts; AI-generated explanations can make mistakes; verify important exam rules with a trusted textbook.</footer>
 </div>
 
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const state={messages:[],busy:false,recognition:null,speechRunId:0};
+const state={messages:[],busy:false,recognition:null,speechRunId:0,pendingLesson:null,lessonRunId:0};
 const DEFAULT_URL='https://grammar-master-ai-api.maczone61.workers.dev';
 const REQUEST_TIMEOUT=150000;
 
@@ -188,7 +188,7 @@ function renderMessage(msg){
  }
  $('chat').appendChild(card);card.scrollIntoView({behavior:'smooth',block:'nearest'});return card;
 }
-function addMessage(role,content){const message={role,content};state.messages.push(message);return renderMessage(message);}
+function addMessage(role,content){const message={role,content};state.messages.push(message);saveAppState();return renderMessage(message);}
 function renderHistory(){
  $('chat').innerHTML='';
  if(!state.messages.length){const e=document.createElement('div');e.className='empty';e.id='empty';e.textContent='Your lesson will appear here. Ask a question or enter a topic to begin.';$('chat').appendChild(e);return;}
@@ -211,8 +211,132 @@ async function readResponse(response){
  if(!response.ok)throw new Error((data&&(data.error||data.message))||('Worker request failed with HTTP '+response.status+'.'));
  return data;
 }
+
+function shouldUseMultipart(question,mode){
+ const q=String(question||'').trim();
+ const bareTopic=q.length<=100&&!/[?!.;:\n]/.test(q)&&q.split(/\s+/).length<=7&&!/^(?:please\s+)?(?:give|show|explain|define|compare|analyse|analyze|correct|check|identify|find|write|make|create|provide|tell|why|how|what|who|when|where|more|another|can|could|would|do|does|is|are)\b/i.test(q)&&/^[\p{L}\p{M}][\p{L}\p{M}\s'’()-]*$/u.test(q);
+ const explicit=/\b(teach me|teach|full lesson|complete lesson|detailed lecture|lecture on|lesson on|teach a topic|all about|all types of|explain all)\b/i.test(q);
+ return bareTopic||mode==='lecture'||explicit;
+}
+async function postWorker(url,payload,timeout=REQUEST_TIMEOUT){
+ const controller=new AbortController();
+ const timer=window.setTimeout(()=>controller.abort(),timeout);
+ try{
+  const response=await fetch(url+'/teach',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},signal:controller.signal,body:JSON.stringify(payload)});
+  return await readResponse(response);
+ }catch(error){
+  if(error?.name==='AbortError')throw new Error('This request took longer than '+Math.round(timeout/1000)+' seconds. The lesson will remain at this part so you can retry it.');
+  throw error;
+ }finally{window.clearTimeout(timer);}
+}
+function setNextPartDisplay(text){
+ const box=$('question');box.value=text;box.disabled=true;
+ $('send').textContent='Next Part…';
+}
+function restoreComposer(){
+ $('question').disabled=false;$('question').value='';
+ $('question').placeholder='For example: Explain all types of group verbs with their uses in sentences…';
+ $('send').textContent='Ask teacher ↗';
+}
+function currentHistory(){return state.messages.slice(-8).map(m=>({role:m.role,content:String(m.content||'').slice(-2500)}));}
+function saveAppState(){
+ try{localStorage.setItem('gmai_lesson_v8_state',JSON.stringify({messages:state.messages.slice(-40),pendingLesson:state.pendingLesson}));}catch(e){}
+}
+function restoreSavedConversation(){
+ try{
+  const raw=localStorage.getItem('gmai_lesson_v8_state');if(!raw)return;
+  const saved=JSON.parse(raw);
+  if(Array.isArray(saved.messages))state.messages=saved.messages.filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string');
+  if(saved.pendingLesson&&typeof saved.pendingLesson.topic==='string')state.pendingLesson=saved.pendingLesson;
+  renderHistory();
+  if(state.pendingLesson){
+   const pending=state.pendingLesson;
+   $('question').value='Next Part';
+   if(!validWorkerUrl(backendUrl())){$('question').disabled=false;$('send').textContent='Retry Next Part';setStatus('A lesson was interrupted. Save a valid Worker URL, then tap Retry Next Part.','error');return;}
+   $('question').disabled=true;$('send').disabled=true;$('send').textContent='Next Part…';
+   state.busy=true;setStatus('An unfinished lesson was found. Resuming Part '+(Number(pending.nextIndex||0)+1)+' automatically…','good');
+   runMultipartLesson(backendUrl(),pending.topic,pending.settings||{mode:'lecture',language:$('language').value,level:$('level').value,detail:$('detail').value})
+    .catch(error=>setStatus('The lesson is paused: '+(error?.message||'Unknown error')+'. Tap Retry Next Part to continue.','error'))
+    .finally(()=>{state.busy=false;$('send').disabled=false;if(state.pendingLesson)$('send').textContent='Retry Next Part';else $('send').textContent='Ask teacher ↗';});
+  }
+ }catch(e){try{localStorage.removeItem('gmai_lesson_v8_state');}catch(_){} }
+}
+async function requestPlan(url,topic,settings){
+ let lastError;
+ for(let attempt=1;attempt<=3;attempt++){
+  try{
+   setStatus(attempt===1?'Preparing the complete lesson roadmap…':'Retrying the lesson roadmap ('+attempt+'/3)…');
+   const data=await postWorker(url,{question:topic,lessonAction:'plan',history:currentHistory(),settings},REQUEST_TIMEOUT);
+   if(data.lessonPlan&&Array.isArray(data.lessonPlan.parts)&&data.lessonPlan.parts.length)return data.lessonPlan;
+   throw new Error(data.error||'The teacher did not return a usable lesson plan.');
+  }catch(e){lastError=e;if(attempt<3)await new Promise(resolve=>window.setTimeout(resolve,900*attempt));}
+ }
+ throw lastError||new Error('Could not prepare the lesson plan.');
+}
+async function requestLessonPart(url,lesson,index,settings){
+ let lastError;
+ for(let attempt=1;attempt<=3;attempt++){
+  try{
+   setNextPartDisplay(index===0?'Preparing Part 1…':'Next Part');
+   setStatus('Preparing Part '+(index+1)+' of '+lesson.plan.parts.length+': '+lesson.plan.parts[index].title+(attempt>1?' · retry '+attempt+'/3':''));
+   const data=await postWorker(url,{question:lesson.topic,topic:lesson.topic,lessonAction:'part',plan:lesson.plan,partIndex:index,history:currentHistory(),settings},REQUEST_TIMEOUT);
+   const answer=extractAnswer(data);
+   if(answer)return data;
+   throw new Error(data.error||'The teacher returned an empty lesson part.');
+  }catch(e){lastError=e;if(attempt<3)await new Promise(resolve=>window.setTimeout(resolve,1200*attempt));}
+ }
+ throw lastError||new Error('Could not create Part '+(index+1)+'.');
+}
+async function runMultipartLesson(url,topic,settings){
+ const runId=++state.lessonRunId;
+ let plan;
+ const resumed=state.pendingLesson&&state.pendingLesson.topic===topic&&state.pendingLesson.plan?state.pendingLesson:null;
+ if(resumed){plan=resumed.plan;state.pendingLesson=resumed;}
+ else{
+  state.pendingLesson={topic,settings,plan:null,nextIndex:0};saveAppState();
+  try{plan=await requestPlan(url,topic,settings);}
+  catch(error){state.pendingLesson=null;saveAppState();$('question').disabled=false;$('question').value=topic;$('send').textContent='Retry lesson';throw error;}
+  if(runId!==state.lessonRunId)return;
+  state.pendingLesson={topic,settings,plan,nextIndex:0};saveAppState();
+  setStatus('The lesson has '+plan.parts.length+' parts. Starting Part 1 automatically.','good');
+ }
+ for(let index=state.pendingLesson.nextIndex;index<plan.parts.length;index++){
+  if(runId!==state.lessonRunId)return;
+  state.pendingLesson.nextIndex=index;
+  let data;
+  try{data=await requestLessonPart(url,state.pendingLesson,index,settings);}
+  catch(error){
+   state.pendingLesson.nextIndex=index;saveAppState();
+   $('question').disabled=false;$('question').value='Next Part';$('send').disabled=false;$('send').textContent='Retry Next Part';
+   setStatus('Part '+(index+1)+' is paused. '+error.message+' Your completed parts are saved and will not be repeated. Tap Retry Next Part to continue.','error');
+   throw error;
+  }
+  if(runId!==state.lessonRunId)return;
+  state.pendingLesson.nextIndex=index+1;
+  addMessage('assistant',data.answer);
+  if(data.isFinal||index===plan.parts.length-1){
+   state.pendingLesson=null;saveAppState();restoreComposer();
+   setStatus('The complete lesson has finished. All '+plan.parts.length+' parts have been delivered. You can now ask a follow-up question.','good');
+   return;
+  }
+  const next=plan.parts[index+1];
+  setNextPartDisplay('Next Part');
+  setStatus('Part '+(index+1)+' is complete. The teacher is now preparing Part '+(index+2)+': '+next.title+'.','good');
+ }
+}
+
 async function sendQuestion(){
  if(state.busy)return;
+ if(state.pendingLesson){
+  state.busy=true;$('send').disabled=true;
+  try{
+   const pending=state.pendingLesson;
+   setStatus('Resuming the lesson from Part '+(pending.nextIndex+1)+'…');
+   await runMultipartLesson(backendUrl(),pending.topic,pending.settings);
+  }catch(error){setStatus('Could not continue the lesson: '+(error?.message||'Unknown error'),'error');}
+  finally{state.busy=false;$('send').disabled=false;if(!state.pendingLesson)$('send').textContent='Ask teacher ↗';}
+  return;
+ }
  const originalQuestion=$('question').value.trim();
  if(!originalQuestion){setStatus('Please enter a question or grammar topic first.','error');$('question').focus();return;}
  const url=backendUrl();
@@ -221,28 +345,28 @@ async function sendQuestion(){
  const send=$('send'),oldLabel=send.textContent;send.disabled=true;send.textContent='Teacher is preparing…';
  setStatus('Sending your question to the teacher…');
  const settings={mode:$('mode').value,language:$('language').value,level:$('level').value,detail:$('detail').value};
- const history=state.messages.slice(-8).map(m=>({role:m.role,content:String(m.content||'').slice(-2500)}));
+ const multipart=shouldUseMultipart(originalQuestion,settings.mode);
+ const historyBeforeQuestion=currentHistory();
  addMessage('user',originalQuestion);
- const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),REQUEST_TIMEOUT);
- let waitingTimer=window.setTimeout(()=>{if(state.busy)setStatus('The teacher is still preparing your answer. Longer lectures may take a little time.');},10000);
  try{
-  const response=await fetch(url+'/teach',{
-   method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
-   signal:controller.signal,
-   body:JSON.stringify({question:originalQuestion,history,settings})
-  });
-  setStatus('Response received. Checking the lesson…');
-  const data=await readResponse(response);
-  const answer=extractAnswer(data);
-  if(!answer)throw new Error((data&&(data.error||data.message))||'The Worker returned valid JSON, but no answer text was found. The Worker should return an object containing an "answer" string.');
-  addMessage('assistant',answer);setStatus('Lesson received. You can ask a follow-up question.','good');$('question').value='';
+  if(multipart){
+   $('question').value='Preparing lesson…';$('question').disabled=true;
+   await runMultipartLesson(url,originalQuestion,settings);
+  }else{
+   const data=await postWorker(url,{question:originalQuestion,history:historyBeforeQuestion,settings,clientSupportsMultipart:true},REQUEST_TIMEOUT);
+   if(data.lessonPlanRequired){$('question').value='Preparing lesson…';$('question').disabled=true;await runMultipartLesson(url,originalQuestion,settings);return;}
+   const answer=extractAnswer(data);
+   if(!answer)throw new Error((data&&(data.error||data.message))||'The Worker returned valid JSON, but no answer text was found.');
+   addMessage('assistant',answer);setStatus('Answer received. You can ask a follow-up question.','good');restoreComposer();
+  }
  }catch(error){
   let message=error?.message||'Unknown connection error';
-  if(error?.name==='AbortError')message='The request exceeded 150 seconds. The Worker may be slow or the AI model may be stuck. Test the backend connection. If the connection test succeeds but teaching still times out, the Worker/model code needs attention.';
-  else if(/failed to fetch|networkerror|load failed/i.test(message))message='The browser could not receive a response. Check your internet connection, Worker URL, and the Worker CORS settings.';
+  if(/failed to fetch|networkerror|load failed/i.test(message))message='The browser could not receive a response. Check your internet connection, Worker URL, and Worker CORS settings.';
+  if(!state.pendingLesson&&$('question').disabled){$('question').disabled=false;$('question').value=originalQuestion;$('send').textContent='Retry lesson';}
   setStatus('Could not create the lesson: '+message,'error');
  }finally{
-  window.clearTimeout(timer);window.clearTimeout(waitingTimer);state.busy=false;send.disabled=false;send.textContent=oldLabel;
+  state.busy=false;send.disabled=false;
+  if(!state.pendingLesson&&send.textContent==='Teacher is preparing…')send.textContent=oldLabel;
  }
 }
 
@@ -372,12 +496,12 @@ $('saveUrl').onclick=saveSettings;$('testUrl').onclick=testBackend;
 $('newChat').onclick=()=>{
  state.speechRunId++;if('speechSynthesis'in window)window.speechSynthesis.cancel();
  if(state.busy){setStatus('The current request is still running. Wait for it to finish before starting a new conversation.');return;}
- state.messages=[];renderHistory();setStatus('New conversation started. Previous messages are cleared from this page.');
+ state.lessonRunId++;state.pendingLesson=null;restoreComposer();state.messages=[];saveAppState();renderHistory();setStatus('New conversation started. Previous messages and any unfinished lesson sequence are cleared from this page.');
 };
 $('readAll').onclick=()=>{const last=[...state.messages].reverse().find(m=>m.role==='assistant');if(last)speakText(last.content);else setStatus('There is no answer to read yet.','error');};
 $('stopSpeech').onclick=()=>{state.speechRunId++;if('speechSynthesis'in window)window.speechSynthesis.cancel();setStatus('Voice stopped.');};
 $('language').addEventListener('change',()=>{try{localStorage.setItem('gmai_language',$('language').value);}catch(e){}});
-loadSettings();setupVoiceInput();
+loadSettings();setupVoiceInput();restoreSavedConversation();
 })();
 </script>
 </body>
